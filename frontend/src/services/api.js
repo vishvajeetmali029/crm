@@ -1,7 +1,22 @@
 import axios from "axios";
 
-const baseURL =
-    process.env.REACT_APP_API_URL || "http://localhost:4000/api";
+function buildApiBaseUrl(rawUrl) {
+    const fallbackUrl = "http://localhost:4000/api";
+
+    if (!rawUrl) {
+        return fallbackUrl;
+    }
+
+    const trimmedUrl = rawUrl.trim().replace(/\/+$/, "");
+
+    if (trimmedUrl.endsWith("/api")) {
+        return trimmedUrl;
+    }
+
+    return `${trimmedUrl}/api`;
+}
+
+const baseURL = buildApiBaseUrl(process.env.REACT_APP_API_URL);
 
 const API = axios.create({
     baseURL,

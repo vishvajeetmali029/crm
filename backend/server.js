@@ -8,14 +8,26 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
+const allowedOrigins = (
+    process.env.CLIENT_ORIGINS ||
+    "http://localhost:3000,https://crm-rouge-sigma.vercel.app,https://crm-ak7v.vercel.app"
+)
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 app.use(
-  cors({
-    origin: ["https://crm-ak7v.vercel.app", "http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);)
+    cors({
+        origin(origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            return callback(new Error("Not allowed by CORS"));
+        },
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
+    }),
 );
 app.use(express.json());
 
