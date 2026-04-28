@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import API from "../services/api";
 import { getStoredUser } from "../utils/auth";
 
@@ -13,7 +13,7 @@ export default function Dashboard() {
     const [studentProfile, setStudentProfile] = useState(null);
     const [studentPayment, setStudentPayment] = useState(null);
 
-    const loadStats = async () => {
+    const loadStats = useCallback(async () => {
         const students = await API.get("/students?limit=1000");
         const enquiries = await API.get("/enquiries");
         const studentList = students.data.students || students.data || [];
@@ -35,26 +35,30 @@ export default function Dashboard() {
             revenue,
             pending,
         });
-    };
+    }, []);
 
-    const loadStudentDashboard = async () => {
+    const loadStudentDashboard = useCallback(async () => {
+        if (!user?.email) return;
+
         const res = await API.get(
-            `/students/profile/me?email=${encodeURIComponent(user.email)}`,
+            `/students/profile/me?email=${encodeURIComponent(user.email)}`
         );
+
         setStudentProfile(res.data);
 
         const payment = await API.get(`/payments/${res.data._id}`);
         setStudentPayment(payment.data);
-    };
+    }, [user?.email]);
 
     useEffect(() => {
-        if (user?.role === "student") {
-            loadStudentDashboard();
-            return;
-        }
+        if (!user) return;
 
-        loadStats();
-    }, []);
+        if (user.role === "student") {
+            loadStudentDashboard();
+        } else {
+            loadStats();
+        }
+    }, [user?.role, loadStudentDashboard, loadStats]);
 
     if (user?.role === "student") {
         return (
