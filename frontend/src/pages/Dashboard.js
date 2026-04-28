@@ -3,7 +3,7 @@ import API from "../services/api";
 import { getStoredUser } from "../utils/auth";
 
 export default function Dashboard() {
-    const user = getStoredUser();
+    const [user] = useState(getStoredUser());
     const [stats, setStats] = useState({
         students: 0,
         enquiries: 0,
@@ -58,7 +58,7 @@ export default function Dashboard() {
         } else {
             loadStats();
         }
-    }, [user?.role, loadStudentDashboard, loadStats]);
+    }, [user, loadStudentDashboard, loadStats]);
 
     if (user?.role === "student") {
         return (
